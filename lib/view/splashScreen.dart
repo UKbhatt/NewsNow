@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
+import './homeScreen.dart';
 
 class Splashscreen extends StatefulWidget {
   const Splashscreen({super.key});
@@ -10,8 +13,16 @@ class Splashscreen extends StatefulWidget {
 }
 
 class _SplashscreenState extends State<Splashscreen> {
-  // late final double height , width;
   @override
+  
+  void initState() {
+
+    super.initState();
+    Timer(const Duration(seconds: 3), () {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Homescreen()));
+    });
+  }
+
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height * 1;
     final width = MediaQuery.of(context).size.width * 1;
@@ -32,7 +43,8 @@ class _SplashscreenState extends State<Splashscreen> {
           ),
           Text(
             'News App',
-            style: GoogleFonts.anton(letterSpacing: 0.6 , color: Colors.grey[700], fontSize: 30),
+            style: GoogleFonts.anton(
+                letterSpacing: 0.6, color: Colors.grey[700], fontSize: 30),
           ),
           SizedBox(
             height: height * 0.1,
