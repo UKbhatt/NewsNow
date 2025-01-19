@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../viewModel/newViewModel.dart';
@@ -51,13 +52,13 @@ class _HomescreenState extends State<Homescreen> {
             );
           } else if (snapshot.hasData) {
             return SizedBox(
-              height: height * 0.55, 
+              height: height * 0.55,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: snapshot.data!.articles!.length,
                 itemBuilder: (context, index) => Container(
                   height: height * 0.55,
-                  width: width * 0.9,   
+                  width: width * 0.9,
                   margin:
                       const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                   decoration: BoxDecoration(
@@ -77,19 +78,27 @@ class _HomescreenState extends State<Homescreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          snapshot.data!.articles![index].title ?? 'No Title',
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                        Container(
+                          height: height * 0.3,
+                          width: width * 0.9,
+                          child: CachedNetworkImage(
+                            imageUrl:
+                                snapshot.data!.articles![index].urlToImage!,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => const Center(
+                              child: SpinKitSquareCircle(
+                                color: Color.fromARGB(255, 162, 199, 228),
+                                size: 50,
+                              ),
+                            ),
+                          ),
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
+                        Container(
+                          margin: const EdgeInsets.symmetric(vertical: 8),
                           child: Text(
-                            snapshot.data!.articles![index].description ??
-                                'No Description',
-                            style: const TextStyle(fontSize: 16),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 4,
+                            snapshot.data!.articles![index].title!,
+                            style: const TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],
