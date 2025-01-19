@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:newapp/model/NewsSource.dart';
 import '../viewModel/newViewModel.dart';
 
 class Homescreen extends StatefulWidget {
@@ -12,11 +13,36 @@ class Homescreen extends StatefulWidget {
 
 class _HomescreenState extends State<Homescreen> {
   late Future _newsFuture;
+  String selectedName = 'bbc-news';
+  List<String> _sources = [];
+  bool _isLoadingSources = false;
 
   @override
   void initState() {
     super.initState();
-    _newsFuture = Newviewmodel().fetchNewsHeadlines();
+    _newsFuture = Newviewmodel().fetchNewsHeadlines(selectedName);
+    fetchSources();
+  }
+
+  Future<void> fetchSources() async {
+    setState(() {
+      _isLoadingSources = true;
+    });
+    try {
+      final Sources sourcesResponse = await Newviewmodel().fetchNewSources();
+      setState(() {
+        _sources =
+            sourcesResponse.sources!.map((source) => source.name!).toList();
+        _isLoadingSources = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingSources = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load sources: $e')),
+      );
+    }
   }
 
   @override
@@ -39,6 +65,35 @@ class _HomescreenState extends State<Homescreen> {
           style: TextStyle(
               color: Colors.black, fontSize: 25, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          if (_isLoadingSources)
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Center(
+                child: CircularProgressIndicator(
+                    color: Color.fromARGB(255, 235, 113, 163), strokeWidth: 2),
+              ),
+            )
+          else
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.category, color: Colors.black),
+              onSelected: (String value) {
+                setState(() {
+                  selectedName = value;
+                  print('Selected source: $selectedName');
+                  _newsFuture = Newviewmodel().fetchNewsHeadlines(selectedName);
+                });
+              },
+              itemBuilder: (BuildContext context) {
+                return _sources
+                    .map((source) => PopupMenuItem<String>(
+                          value: source,
+                          child: Text(source),
+                        ))
+                    .toList();
+              },
+            ),
+        ],
       ),
       body: FutureBuilder(
         future: _newsFuture,
@@ -56,65 +111,94 @@ class _HomescreenState extends State<Homescreen> {
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: snapshot.data!.articles!.length,
-                itemBuilder: (context, index) => Container(
-                  height: height * 0.55,
-                  width: width * 0.9,
-                  margin:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                itemBuilder: (context, index) {
+                  final article = snapshot.data!.articles![index];
+                  return Container(
+                    width: width * 0.9,
+                    margin: const EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.3),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Stack(
                       children: [
-                        Container(
-                          height: height * 0.3,
-                          width: width * 0.9,
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
                           child: CachedNetworkImage(
-                            imageUrl:
-                                snapshot.data!.articles![index].urlToImage!,
+                            imageUrl: article.urlToImage ?? '',
                             fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
                             placeholder: (context, url) => const Center(
                               child: SpinKitSquareCircle(
                                 color: Color.fromARGB(255, 162, 199, 228),
                                 size: 50,
                               ),
                             ),
+                            errorWidget: (context, url, error) => const Center(
+                              child: Icon(
+                                Icons.error,
+                                color: Colors.red,
+                              ),
+                            ),
                           ),
                         ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          child: Text(
-                            snapshot.data!.articles![index].title!,
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
+                        Positioned(
+                          bottom: 16,
+                          left: 16,
+                          right: 16,
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.7),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  article.title ?? 'No Title',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  article.source?.name ?? 'Unknown Publisher',
+                                  style: const TextStyle(
+                                      color: Colors.white70, fontSize: 14),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  article.publishedAt ?? 'Unknown Date',
+                                  style: const TextStyle(
+                                      color: Colors.white60, fontSize: 12),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
             );
           } else if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
+            return Center(child: Text('Error loading articles.'));
           } else {
-            return const Center(
-              child: Text('No data available'),
-            );
+            return const Center(child: Text('No data available'));
           }
         },
       ),

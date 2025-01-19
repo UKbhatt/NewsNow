@@ -1,14 +1,19 @@
 import 'package:newapp/repository/newRepository.dart';
 import 'package:newapp/model/NewsHeadlines.dart';
+import 'package:newapp/model/NewsSource.dart';
 
-class Newviewmodel{
-
+class Newviewmodel {
   final _rep = Newrepository();
 
-  Future<NewsHeadlines> fetchNewsHeadlines()async{
+  Future<NewsHeadlines> fetchNewsHeadlines(String source) async {
+    print('1' + source);
 
-    final response = await _rep.fetchNewsHeadlines();
+    final response = await _rep.fetchNewsHeadlines(source);
     return response;
   }
 
+  Future<Sources> fetchNewSources() async {
+    final response = await _rep.fetchNewsSources();
+    return response;
+  }
 }
