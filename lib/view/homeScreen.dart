@@ -86,15 +86,15 @@ class _HomescreenState extends State<Homescreen> {
               icon: const Icon(Icons.category, color: Colors.black),
               onSelected: (String value) {
                 setState(() {
-                  selectedName = value; 
+                  selectedName = value;
                   _newsFuture = Newviewmodel().fetchNewsHeadlines(selectedName);
                 });
               },
               itemBuilder: (BuildContext context) {
                 return List.generate(_sources.length, (index) {
                   return PopupMenuItem<String>(
-                    value: _sourcesIds[index], 
-                    child: Text(_sources[index]), 
+                    value: _sourcesIds[index],
+                    child: Text(_sources[index]),
                   );
                 });
               },
@@ -124,7 +124,7 @@ class _HomescreenState extends State<Homescreen> {
                     try {
                       dateTime = DateTime.parse(article.publishedAt!);
                     } catch (e) {
-                      dateTime = null; 
+                      dateTime = null;
                     }
                   }
                   return Container(
@@ -195,7 +195,6 @@ class _HomescreenState extends State<Homescreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  // ignore: unnecessary_null_comparison
                                   dateTime != null
                                       ? format.format(dateTime)
                                       : 'Unknown Date',
