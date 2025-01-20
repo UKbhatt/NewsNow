@@ -80,7 +80,6 @@ class _HomescreenState extends State<Homescreen> {
               onSelected: (String value) {
                 setState(() {
                   selectedName = value;
-                  print('Selected source: $selectedName');
                   _newsFuture = Newviewmodel().fetchNewsHeadlines(selectedName);
                 });
               },
@@ -164,7 +163,7 @@ class _HomescreenState extends State<Homescreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  article.title ?? 'No Title',
+                                  article.title  ?? 'No Title',
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,

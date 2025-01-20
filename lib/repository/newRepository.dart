@@ -11,7 +11,6 @@ class Newrepository {
     if (apiKey == null || apiKey.isEmpty) {
       throw Exception('API key is missing. Please check your .env file.');
     }
-    print('2' + source);
 
     final response = await get(Uri.parse(
         'https://newsapi.org/v2/top-headlines?sources=$source&apiKey=$apiKey'));

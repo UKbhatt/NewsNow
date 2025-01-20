@@ -6,7 +6,6 @@ class Newviewmodel {
   final _rep = Newrepository();
 
   Future<NewsHeadlines> fetchNewsHeadlines(String source) async {
-    print('1' + source);
 
     final response = await _rep.fetchNewsHeadlines(source);
     return response;
