@@ -1,8 +1,8 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:newapp/model/NewsHeadlines.dart';
 import 'package:http/http.dart';
-import 'dart:convert';
 import '../model/NewsSource.dart';
+import 'dart:convert';
 
 class Newrepository {
   Future<NewsHeadlines> fetchNewsHeadlines(String source) async {

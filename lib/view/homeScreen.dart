@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:newapp/model/NewsSource.dart';
 import '../viewModel/newViewModel.dart';
+import 'package:intl/intl.dart';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key});
@@ -12,8 +13,9 @@ class Homescreen extends StatefulWidget {
 }
 
 class _HomescreenState extends State<Homescreen> {
+  final format = DateFormat('MMMM dd, yyyy');
   late Future _newsFuture;
-  String selectedName = 'bbc-news';
+  String selectedName = 'abc-news';
   List<String> _sources = [];
   bool _isLoadingSources = false;
 
@@ -24,15 +26,19 @@ class _HomescreenState extends State<Homescreen> {
     fetchSources();
   }
 
+  List<String> _sourcesIds = [];
+
   Future<void> fetchSources() async {
     setState(() {
       _isLoadingSources = true;
     });
     try {
-      final Sources sourcesResponse = await Newviewmodel().fetchNewSources();
+      final Sources sourcesResponse = await Newviewmodel().fetchNewsSources();
       setState(() {
         _sources =
             sourcesResponse.sources!.map((source) => source.name!).toList();
+        _sourcesIds =
+            sourcesResponse.sources!.map((source) => source.id!).toList();
         _isLoadingSources = false;
       });
     } catch (e) {
@@ -76,22 +82,23 @@ class _HomescreenState extends State<Homescreen> {
             )
           else
             PopupMenuButton<String>(
+              initialValue: selectedName,
               icon: const Icon(Icons.category, color: Colors.black),
               onSelected: (String value) {
                 setState(() {
-                  selectedName = value;
+                  selectedName = value; 
                   _newsFuture = Newviewmodel().fetchNewsHeadlines(selectedName);
                 });
               },
               itemBuilder: (BuildContext context) {
-                return _sources
-                    .map((source) => PopupMenuItem<String>(
-                          value: source,
-                          child: Text(source),
-                        ))
-                    .toList();
+                return List.generate(_sources.length, (index) {
+                  return PopupMenuItem<String>(
+                    value: _sourcesIds[index], 
+                    child: Text(_sources[index]), 
+                  );
+                });
               },
-            ),
+            )
         ],
       ),
       body: FutureBuilder(
@@ -112,6 +119,14 @@ class _HomescreenState extends State<Homescreen> {
                 itemCount: snapshot.data!.articles!.length,
                 itemBuilder: (context, index) {
                   final article = snapshot.data!.articles![index];
+                  DateTime? dateTime;
+                  if (article.publishedAt != null) {
+                    try {
+                      dateTime = DateTime.parse(article.publishedAt!);
+                    } catch (e) {
+                      dateTime = null; 
+                    }
+                  }
                   return Container(
                     width: width * 0.9,
                     margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -163,7 +178,7 @@ class _HomescreenState extends State<Homescreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  article.title  ?? 'No Title',
+                                  article.title ?? 'No Title',
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
@@ -180,7 +195,10 @@ class _HomescreenState extends State<Homescreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  article.publishedAt ?? 'Unknown Date',
+                                  // ignore: unnecessary_null_comparison
+                                  dateTime != null
+                                      ? format.format(dateTime)
+                                      : 'Unknown Date',
                                   style: const TextStyle(
                                       color: Colors.white60, fontSize: 12),
                                 ),
@@ -195,7 +213,7 @@ class _HomescreenState extends State<Homescreen> {
               ),
             );
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error loading articles.'));
+            return const Center(child: Text('Error loading articles.'));
           } else {
             return const Center(child: Text('No data available'));
           }
