@@ -21,4 +21,5 @@ class Newviewmodel {
     final response = await _rep.fetchSmallNews();
     return response;
   }
+
 }

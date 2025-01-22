@@ -52,13 +52,12 @@ class Newrepository {
     }
 
     final Response = await get(Uri.parse(
-        ' https://newsapi.org/v2/everything?q=bitcoin&apiKey=$apikey'));
+        'https://newsapi.org/v2/everything?q=bitcoin&apiKey=$apikey'));
 
     if (Response.statusCode == 200) {
       var data = jsonDecode(Response.body);
       return Smallnews.fromJson(data);
-    }
-    else {
+    } else {
       throw Exception(
           'Failed to fetch data. Status code: ${Response.statusCode}');
     }

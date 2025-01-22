@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:newapp/model/NewsHeadlines.dart';
 import 'package:newapp/model/NewsSource.dart';
 import '../viewModel/newViewModel.dart';
 import 'package:intl/intl.dart';
@@ -18,12 +19,30 @@ class _HomescreenState extends State<Homescreen> {
   String selectedName = 'abc-news';
   List<String> _sources = [];
   bool _isLoadingSources = false;
+  List<String> _newsSmall = [];
 
   @override
   void initState() {
     super.initState();
     _newsFuture = Newviewmodel().fetchNewsHeadlines(selectedName);
     fetchSources();
+    fetchNews();
+  }
+
+  List<Article> _globalArticles = [];
+
+  Future<void> fetchNews() async {
+    try {
+      final response = await Newviewmodel().fetchSmallNews();
+      setState(() {
+        _globalArticles = response.articles?.cast<Article>() ?? [];
+      });
+    } catch (e) {
+      print("Error occurred: $e");
+      setState(() {
+        _globalArticles = [];
+      });
+    }
   }
 
   List<String> _sourcesIds = [];
@@ -101,122 +120,166 @@ class _HomescreenState extends State<Homescreen> {
             )
         ],
       ),
-      body: FutureBuilder(
-        future: _newsFuture,
-        builder: (BuildContext context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: SpinKitChasingDots(
-                color: Color.fromARGB(255, 162, 199, 228),
-                size: 50,
-              ),
-            );
-          } else if (snapshot.hasData) {
-            return SizedBox(
-              height: height * 0.55,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: snapshot.data!.articles!.length,
-                itemBuilder: (context, index) {
-                  final article = snapshot.data!.articles![index];
-                  DateTime? dateTime;
-                  if (article.publishedAt != null) {
-                    try {
-                      dateTime = DateTime.parse(article.publishedAt!);
-                    } catch (e) {
-                      dateTime = null;
-                    }
-                  }
-                  return Container(
-                    width: width * 0.9,
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Stack(
-                      children: [
-                        ClipRRect(
+      body: Column(
+        children: [
+          FutureBuilder(
+            future: _newsFuture,
+            builder: (BuildContext context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: SpinKitChasingDots(
+                    color: Color.fromARGB(255, 162, 199, 228),
+                    size: 50,
+                  ),
+                );
+              } else if (snapshot.hasData) {
+                return SizedBox(
+                  height: height * 0.55,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: snapshot.data!.articles!.length,
+                    itemBuilder: (context, index) {
+                      final article = snapshot.data!.articles![index];
+                      DateTime? dateTime;
+                      if (article.publishedAt != null) {
+                        try {
+                          dateTime = DateTime.parse(article.publishedAt!);
+                        } catch (e) {
+                          dateTime = null;
+                        }
+                      }
+                      return Container(
+                        width: width * 0.9,
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16),
-                          child: CachedNetworkImage(
-                            imageUrl: article.urlToImage ?? '',
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                            placeholder: (context, url) => const Center(
-                              child: SpinKitSquareCircle(
-                                color: Color.fromARGB(255, 162, 199, 228),
-                                size: 50,
-                              ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.3),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                              offset: const Offset(0, 3),
                             ),
-                            errorWidget: (context, url, error) => const Center(
-                              child: Icon(
-                                Icons.error,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ),
+                          ],
                         ),
-                        Positioned(
-                          bottom: 16,
-                          left: 16,
-                          right: 16,
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.7),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  article.title ?? 'No Title',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                        child: Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: CachedNetworkImage(
+                                imageUrl: article.urlToImage ?? '',
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                height: double.infinity,
+                                placeholder: (context, url) => const Center(
+                                  child: SpinKitSquareCircle(
+                                    color: Color.fromARGB(255, 162, 199, 228),
+                                    size: 50,
                                   ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  article.source?.name ?? 'Unknown Publisher',
-                                  style: const TextStyle(
-                                      color: Colors.white70, fontSize: 14),
+                                errorWidget: (context, url, error) =>
+                                    const Center(
+                                  child: Icon(
+                                    Icons.error,
+                                    color: Colors.red,
+                                  ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  dateTime != null
-                                      ? format.format(dateTime)
-                                      : 'Unknown Date',
-                                  style: const TextStyle(
-                                      color: Colors.white60, fontSize: 12),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
+                            Positioned(
+                              bottom: 16,
+                              left: 16,
+                              right: 16,
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.7),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      article.title ?? 'No Title',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      article.source?.name ??
+                                          'Unknown Publisher',
+                                      style: const TextStyle(
+                                          color: Colors.white70, fontSize: 14),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      dateTime != null
+                                          ? format.format(dateTime)
+                                          : 'Unknown Date',
+                                      style: const TextStyle(
+                                          color: Colors.white60, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      );
+                    },
+                  ),
+                );
+              } else if (snapshot.hasError) {
+                return const Center(child: Text('Error loading articles.'));
+              } else {
+                return const Center(child: Text('No data available'));
+              }
+            },
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _globalArticles.length,
+              itemBuilder: (context, index) {
+                final article = _globalArticles[index];
+                return Card(
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  child: ListTile(
+                    leading: article.urlToImage != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CachedNetworkImage(
+                              imageUrl: article.urlToImage!,
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) =>
+                                  const CircularProgressIndicator(),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.error),
+                            ),
+                          )
+                        : const Icon(Icons.image, size: 50),
+                    title: Text(
+                      article.title ?? 'No Title',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  );
-                },
-              ),
-            );
-          } else if (snapshot.hasError) {
-            return const Center(child: Text('Error loading articles.'));
-          } else {
-            return const Center(child: Text('No data available'));
-          }
-        },
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
