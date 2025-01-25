@@ -1,8 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:newapp/model/NewsHeadlines.dart';
 import 'package:newapp/model/NewsSource.dart';
+import 'package:newapp/model/Smallnews.dart' as smallnews;
 import '../viewModel/newViewModel.dart';
 import 'package:intl/intl.dart';
 
@@ -16,36 +17,29 @@ class Homescreen extends StatefulWidget {
 class _HomescreenState extends State<Homescreen> {
   final format = DateFormat('MMMM dd, yyyy');
   late Future _newsFuture;
+  late Future<List<smallnews.Article>> _smallNewsFuture;
   String selectedName = 'abc-news';
   List<String> _sources = [];
+  List<String> _sourcesIds = [];
   bool _isLoadingSources = false;
-  List<String> _newsSmall = [];
 
   @override
   void initState() {
     super.initState();
     _newsFuture = Newviewmodel().fetchNewsHeadlines(selectedName);
     fetchSources();
-    fetchNews();
+    _smallNewsFuture = fetchSmallNewsOptimized();
   }
 
-  List<Article> _globalArticles = [];
-
-  Future<void> fetchNews() async {
+  Future<List<smallnews.Article>> fetchSmallNewsOptimized() async {
     try {
       final response = await Newviewmodel().fetchSmallNews();
-      setState(() {
-        _globalArticles = response.articles?.cast<Article>() ?? [];
-      });
+      return response.articles ?? [];
     } catch (e) {
-      print("Error occurred: $e");
-      setState(() {
-        _globalArticles = [];
-      });
+      debugPrint("Error occurred while fetching small news: $e");
+      return [];
     }
   }
-
-  List<String> _sourcesIds = [];
 
   Future<void> fetchSources() async {
     setState(() {
@@ -211,8 +205,7 @@ class _HomescreenState extends State<Homescreen> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      article.source?.name ??
-                                          'Unknown Publisher',
+                                      article.source?.name ?? 'Unknown Publisher',
                                       style: const TextStyle(
                                           color: Colors.white70, fontSize: 14),
                                     ),
@@ -241,40 +234,63 @@ class _HomescreenState extends State<Homescreen> {
               }
             },
           ),
+          const SizedBox(height: 10),
           Expanded(
-            child: ListView.builder(
-              itemCount: _globalArticles.length,
-              itemBuilder: (context, index) {
-                final article = _globalArticles[index];
-                return Card(
-                  margin:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  child: ListTile(
-                    leading: article.urlToImage != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: CachedNetworkImage(
-                              imageUrl: article.urlToImage!,
-                              width: 50,
-                              height: 50,
-                              fit: BoxFit.cover,
+            child: FutureBuilder<List<smallnews.Article>>(
+              future: _smallNewsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: SpinKitChasingDots(
+                      color: Color.fromARGB(255, 162, 199, 228),
+                      size: 50,
+                    ),
+                  );
+                } else if (snapshot.hasError) {
+                  return const Center(
+                    child: Text('Error loading small news articles.'),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('No small news available.'));
+                }
+
+                final smallNews = snapshot.data!;
+                return ListView.builder(
+                  itemCount: smallNews.length,
+                  itemBuilder: (context, index) {
+                    final article = smallNews[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(left:8 , right: 8),
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            CachedNetworkImage(
+                              imageUrl: article.urlToImage ?? '',
                               placeholder: (context, url) =>
                                   const CircularProgressIndicator(),
                               errorWidget: (context, url, error) =>
                                   const Icon(Icons.error),
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
                             ),
-                          )
-                        : const Icon(Icons.image, size: 50),
-                    title: Text(
-                      article.title ?? 'No Title',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                article.title ?? 'No Title',
+                                style: const TextStyle(fontSize: 16),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
+                    );
+                  },
                 );
               },
             ),
