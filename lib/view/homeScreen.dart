@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:newapp/model/NewsSource.dart';
 import 'package:newapp/model/Smallnews.dart' as smallnews;
@@ -22,6 +21,9 @@ class _HomescreenState extends State<Homescreen> {
   List<String> _sources = [];
   List<String> _sourcesIds = [];
   bool _isLoadingSources = false;
+
+  // Track reloadable image keys
+  Map<int, Key> _imageKeys = {};
 
   @override
   void initState() {
@@ -116,6 +118,7 @@ class _HomescreenState extends State<Homescreen> {
       ),
       body: Column(
         children: [
+          // FutureBuilder for fetching large news
           FutureBuilder(
             future: _newsFuture,
             builder: (BuildContext context, snapshot) {
@@ -161,6 +164,8 @@ class _HomescreenState extends State<Homescreen> {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(16),
                               child: CachedNetworkImage(
+                                key: _imageKeys[index] ??
+                                    Key('$index'),
                                 imageUrl: article.urlToImage ?? '',
                                 fit: BoxFit.cover,
                                 width: double.infinity,
@@ -171,11 +176,18 @@ class _HomescreenState extends State<Homescreen> {
                                     size: 50,
                                   ),
                                 ),
-                                errorWidget: (context, url, error) =>
-                                    const Center(
-                                  child: Icon(
-                                    Icons.error,
-                                    color: Colors.red,
+                                errorWidget: (context, url, error) => Center(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _imageKeys[index] =
+                                            Key('$index'); // Trigger rebuild
+                                      });
+                                    },
+                                    child: const Icon(
+                                      Icons.refresh,
+                                      color: Colors.black,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -205,7 +217,8 @@ class _HomescreenState extends State<Homescreen> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      article.source?.name ?? 'Unknown Publisher',
+                                      article.source?.name ??
+                                          'Unknown Publisher',
                                       style: const TextStyle(
                                           color: Colors.white70, fontSize: 14),
                                     ),
@@ -234,66 +247,62 @@ class _HomescreenState extends State<Homescreen> {
               }
             },
           ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: FutureBuilder<List<smallnews.Article>>(
-              future: _smallNewsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: SpinKitChasingDots(
-                      color: Color.fromARGB(255, 162, 199, 228),
-                      size: 50,
-                    ),
-                  );
-                } else if (snapshot.hasError) {
-                  return const Center(
-                    child: Text('Error loading small news articles.'),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No small news available.'));
-                }
-
-                final smallNews = snapshot.data!;
-                return ListView.builder(
-                  itemCount: smallNews.length,
-                  itemBuilder: (context, index) {
-                    final article = smallNews[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(left:8 , right: 8),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          children: [
-                            CachedNetworkImage(
-                              imageUrl: article.urlToImage ?? '',
-                              placeholder: (context, url) =>
-                                  const CircularProgressIndicator(),
-                              errorWidget: (context, url, error) =>
-                                  const Icon(Icons.error),
-                              width: 100,
-                              height: 100,
-                              fit: BoxFit.cover,
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                article.title ?? 'No Title',
-                                style: const TextStyle(fontSize: 16),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+          FutureBuilder<List<smallnews.Article>>(
+            future: _smallNewsFuture,
+            builder: (BuildContext context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: SpinKitChasingDots(
+                    color: Color.fromARGB(255, 162, 199, 228),
+                    size: 50,
+                  ),
                 );
-              },
-            ),
+              } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                return Expanded(
+                  child: ListView.builder(
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      final article = snapshot.data![index];
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 8, right: 8),
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            children: [
+                              CachedNetworkImage(
+                                imageUrl: article.urlToImage ?? '',
+                                placeholder: (context, url) =>
+                                    const CircularProgressIndicator(),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(Icons.error),
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.cover,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  article.title ?? 'No Title',
+                                  style: const TextStyle(fontSize: 16),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              } else if (snapshot.hasError) {
+                return const Center(child: Text('Error loading small news.'));
+              } else {
+                return const Center(child: Text('No small news available.'));
+              }
+            },
           ),
         ],
       ),
