@@ -22,7 +22,6 @@ class _HomescreenState extends State<Homescreen> {
   List<String> _sourcesIds = [];
   bool _isLoadingSources = false;
 
-  // Track reloadable image keys
   Map<int, Key> _imageKeys = {};
 
   @override
@@ -116,195 +115,202 @@ class _HomescreenState extends State<Homescreen> {
             )
         ],
       ),
-      body: Column(
-        children: [
-          // FutureBuilder for fetching large news
-          FutureBuilder(
-            future: _newsFuture,
-            builder: (BuildContext context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: SpinKitChasingDots(
-                    color: Color.fromARGB(255, 162, 199, 228),
-                    size: 50,
-                  ),
-                );
-              } else if (snapshot.hasData) {
-                return SizedBox(
-                  height: height * 0.55,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: snapshot.data!.articles!.length,
-                    itemBuilder: (context, index) {
-                      final article = snapshot.data!.articles![index];
-                      DateTime? dateTime;
-                      if (article.publishedAt != null) {
-                        try {
-                          dateTime = DateTime.parse(article.publishedAt!);
-                        } catch (e) {
-                          dateTime = null;
-                        }
-                      }
-                      return Container(
-                        width: width * 0.9,
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.3),
-                              spreadRadius: 2,
-                              blurRadius: 5,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
+      body: NestedScrollView(
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          return [
+            SliverToBoxAdapter(
+              child: FutureBuilder(
+                future: _newsFuture,
+                builder: (BuildContext context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SizedBox(
+                      height: 200,
+                      child: Center(
+                        child: SpinKitChasingDots(
+                          color: Color.fromARGB(255, 162, 199, 228),
+                          size: 50,
                         ),
-                        child: Stack(
-                          children: [
-                            ClipRRect(
+                      ),
+                    );
+                  } else if (snapshot.hasData) {
+                    return SizedBox(
+                      height: height * 0.55,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: snapshot.data!.articles!.length,
+                        itemBuilder: (context, index) {
+                          final article = snapshot.data!.articles![index];
+                          DateTime? dateTime;
+                          if (article.publishedAt != null) {
+                            try {
+                              dateTime = DateTime.parse(article.publishedAt!);
+                            } catch (e) {
+                              dateTime = null;
+                            }
+                          }
+                          return Container(
+                            width: width * 0.9,
+                            margin: const EdgeInsets.symmetric(horizontal: 8),
+                            decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(16),
-                              child: CachedNetworkImage(
-                                key: _imageKeys[index] ??
-                                    Key('$index'),
-                                imageUrl: article.urlToImage ?? '',
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                height: double.infinity,
-                                placeholder: (context, url) => const Center(
-                                  child: SpinKitSquareCircle(
-                                    color: Color.fromARGB(255, 162, 199, 228),
-                                    size: 50,
-                                  ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.3),
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 3),
                                 ),
-                                errorWidget: (context, url, error) => Center(
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _imageKeys[index] =
-                                            Key('$index'); // Trigger rebuild
-                                      });
-                                    },
-                                    child: const Icon(
-                                      Icons.refresh,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              ],
                             ),
-                            Positioned(
-                              bottom: 16,
-                              left: 16,
-                              right: 16,
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.7),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      article.title ?? 'No Title',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                            child: Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: CachedNetworkImage(
+                                    key: _imageKeys[index] ?? Key('$index'),
+                                    imageUrl: article.urlToImage ?? '',
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    placeholder: (context, url) => const Center(
+                                      child: SpinKitSquareCircle(
+                                        color:
+                                            Color.fromARGB(255, 162, 199, 228),
+                                        size: 50,
                                       ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      article.source?.name ??
-                                          'Unknown Publisher',
-                                      style: const TextStyle(
-                                          color: Colors.white70, fontSize: 14),
+                                    errorWidget: (context, url, error) =>
+                                        Center(
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _imageKeys[index] = Key('$index');
+                                          });
+                                        },
+                                        child: const Icon(
+                                          Icons.refresh,
+                                          color: Colors.black,
+                                        ),
+                                      ),
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      dateTime != null
-                                          ? format.format(dateTime)
-                                          : 'Unknown Date',
-                                      style: const TextStyle(
-                                          color: Colors.white60, fontSize: 12),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              ),
+                                Positioned(
+                                  bottom: 16,
+                                  left: 16,
+                                  right: 16,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.7),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          article.title ?? 'No Title',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          article.source?.name ??
+                                              'Unknown Publisher',
+                                          style: const TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 14),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          dateTime != null
+                                              ? format.format(dateTime)
+                                              : 'Unknown Date',
+                                          style: const TextStyle(
+                                              color: Colors.white60,
+                                              fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                );
-              } else if (snapshot.hasError) {
-                return const Center(child: Text('Error loading articles.'));
-              } else {
-                return const Center(child: Text('No data available'));
-              }
-            },
-          ),
-          FutureBuilder<List<smallnews.Article>>(
-            future: _smallNewsFuture,
-            builder: (BuildContext context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: SpinKitChasingDots(
-                    color: Color.fromARGB(255, 162, 199, 228),
-                    size: 50,
-                  ),
-                );
-              } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                return Expanded(
-                  child: ListView.builder(
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (context, index) {
-                      final article = snapshot.data![index];
-                      return Padding(
-                        padding: const EdgeInsets.only(left: 8, right: 8),
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                          );
+                        },
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    return const Center(child: Text('Error loading articles.'));
+                  } else {
+                    return const Center(child: Text('No data available'));
+                  }
+                },
+              ),
+            ),
+          ];
+        },
+        body: FutureBuilder<List<smallnews.Article>>(
+          future: _smallNewsFuture,
+          builder: (BuildContext context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: SpinKitChasingDots(
+                  color: Color.fromARGB(255, 162, 199, 228),
+                  size: 50,
+                ),
+              );
+            } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+              return ListView.builder(
+                itemCount: snapshot.data!.length,
+                itemBuilder: (context, index) {
+                  final article = snapshot.data![index];
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 8, right: 8),
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          CachedNetworkImage(
+                            imageUrl: article.urlToImage ?? '',
+                            placeholder: (context, url) =>
+                                const CircularProgressIndicator(),
+                            errorWidget: (context, url, error) =>
+                                const Icon(Icons.error),
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
                           ),
-                          child: Row(
-                            children: [
-                              CachedNetworkImage(
-                                imageUrl: article.urlToImage ?? '',
-                                placeholder: (context, url) =>
-                                    const CircularProgressIndicator(),
-                                errorWidget: (context, url, error) =>
-                                    const Icon(Icons.error),
-                                width: 100,
-                                height: 100,
-                                fit: BoxFit.cover,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  article.title ?? 'No Title',
-                                  style: const TextStyle(fontSize: 16),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              article.title ?? 'No Title',
+                              style: const TextStyle(fontSize: 16),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                );
-              } else if (snapshot.hasError) {
-                return const Center(child: Text('Error loading small news.'));
-              } else {
-                return const Center(child: Text('No small news available.'));
-              }
-            },
-          ),
-        ],
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            } else if (snapshot.hasError) {
+              return const Center(child: Text('Error loading small news.'));
+            } else {
+              return const Center(child: Text('No small news available.'));
+            }
+          },
+        ),
       ),
     );
   }

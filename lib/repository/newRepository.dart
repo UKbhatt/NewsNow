@@ -54,7 +54,7 @@ class Newrepository {
     }
 
     final Response = await get(Uri.parse(
-        'https://newsapi.org/v2/everything?q=bitcoin&apiKey=$apikey'));
+        'https://newsapi.org/v2/everything?q=general&apiKey=$apikey'));
 
     if (Response.statusCode == 200) {
       var data = jsonDecode(Response.body);
