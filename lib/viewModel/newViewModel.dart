@@ -1,5 +1,6 @@
 import 'package:newapp/repository/newRepository.dart';
 import 'package:newapp/model/NewsHeadlines.dart';
+import '../model/categoryNews.dart';
 import 'package:newapp/model/NewsSource.dart';
 import 'package:newapp/model/Smallnews.dart';
 
@@ -21,5 +22,11 @@ class Newviewmodel {
     final response = await _rep.fetchSmallNews();
     return response;
   }
+  
+  Future<CategoryNews> fetchCategoryNews(String category) async {
+    final response = await _rep.fetchCategoryNews(category);
+    return response;
+  }
+
 
 }

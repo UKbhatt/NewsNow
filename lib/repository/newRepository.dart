@@ -2,6 +2,7 @@
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:newapp/model/NewsHeadlines.dart';
+import '../model/categoryNews.dart';
 import 'package:http/http.dart';
 import '../model/Smallnews.dart';
 import '../model/NewsSource.dart';
@@ -59,6 +60,25 @@ class Newrepository {
     if (Response.statusCode == 200) {
       var data = jsonDecode(Response.body);
       return Smallnews.fromJson(data);
+    } else {
+      throw Exception(
+          'Failed to fetch data. Status code: ${Response.statusCode}');
+    }
+  }
+
+  Future<CategoryNews> fetchCategoryNews(String category) async {
+    final apikey = dotenv.env['APIKEY'];
+
+    if (apikey == null || apikey.isEmpty) {
+      throw Exception('API key is missing. Please check your .env file.');
+    }
+
+    final Response = await get(Uri.parse(
+        'https://newsapi.org/v2/everything?q=${category}&apiKey=4099b3597606429bb75ade7153330fb5'));
+
+    if (Response.statusCode == 200) {
+      var data = jsonDecode(Response.body);
+      return CategoryNews.fromJson(data);
     } else {
       throw Exception(
           'Failed to fetch data. Status code: ${Response.statusCode}');

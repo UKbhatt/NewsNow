@@ -4,6 +4,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:newapp/model/NewsSource.dart';
 import 'package:newapp/model/Smallnews.dart' as smallnews;
 import '../viewModel/newViewModel.dart';
+import '../view/CategorySection.dart';
 import 'package:intl/intl.dart';
 
 class Homescreen extends StatefulWidget {
@@ -77,7 +78,8 @@ class _HomescreenState extends State<Homescreen> {
             Icons.menu,
             color: Colors.black,
           ),
-          onPressed: () {},
+          onPressed: () => Navigator.push(context,
+              MaterialPageRoute(builder: (context) => Categorysection())),
         ),
         centerTitle: true,
         title: const Text(
