@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:newapp/model/NewsSource.dart';
 import 'package:newapp/model/Smallnews.dart' as smallnews;
+import '../view/Description.dart';
 import '../viewModel/newViewModel.dart';
 import '../view/CategorySection.dart';
 import 'package:intl/intl.dart';
@@ -24,6 +25,7 @@ class _HomescreenState extends State<Homescreen> {
   bool _isLoadingSources = false;
 
   Map<int, Key> _imageKeys = {};
+  
 
   @override
   void initState() {
@@ -79,7 +81,7 @@ class _HomescreenState extends State<Homescreen> {
             color: Colors.black,
           ),
           onPressed: () => Navigator.push(context,
-              MaterialPageRoute(builder: (context) => Categorysection())),
+              MaterialPageRoute(builder: (context) => const Categorysection())),
         ),
         centerTitle: true,
         title: const Text(
@@ -164,85 +166,108 @@ class _HomescreenState extends State<Homescreen> {
                                 ),
                               ],
                             ),
-                            child: Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: CachedNetworkImage(
-                                    key: _imageKeys[index] ?? Key('$index'),
-                                    imageUrl: article.urlToImage ?? '',
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                    placeholder: (context, url) => const Center(
-                                      child: SpinKitSquareCircle(
-                                        color:
-                                            Color.fromARGB(255, 162, 199, 228),
-                                        size: 50,
-                                      ),
-                                    ),
-                                    errorWidget: (context, url, error) =>
-                                        Center(
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _imageKeys[index] = Key('$index');
-                                          });
-                                        },
-                                        child: const Icon(
-                                          Icons.refresh,
-                                          color: Colors.black,
-                                        ),
-                                      ),
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DescriptionScreen(
+                                      image: article.urlToImage ?? '',
+                                      title: article.title ?? 'No Title',
+                                      description: article.description ??
+                                          'No Description Available',
+                                      author:
+                                          article.author ?? 'Unknown Author',
+                                      source: article.source?.name ??
+                                          'Unknown Source',
+                                      dateTime: dateTime != null
+                                          ? format.format(dateTime)
+                                          : 'Unknown Date',
                                     ),
                                   ),
-                                ),
-                                Positioned(
-                                  bottom: 16,
-                                  left: 16,
-                                  right: 16,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.7),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          article.title ?? 'No Title',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
+                                );
+                              },
+                              child: Stack(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: CachedNetworkImage(
+                                      key: _imageKeys[index] ?? Key('$index'),
+                                      imageUrl: article.urlToImage ?? '',
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      placeholder: (context, url) =>
+                                          const Center(
+                                        child: SpinKitSquareCircle(
+                                          color: Color.fromARGB(
+                                              255, 162, 199, 228),
+                                          size: 50,
+                                        ),
+                                      ),
+                                      errorWidget: (context, url, error) =>
+                                          Center(
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              _imageKeys[index] = Key('$index');
+                                            });
+                                          },
+                                          child: const Icon(
+                                            Icons.refresh,
+                                            color: Colors.black,
                                           ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          article.source?.name ??
-                                              'Unknown Publisher',
-                                          style: const TextStyle(
-                                              color: Colors.white70,
-                                              fontSize: 14),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          dateTime != null
-                                              ? format.format(dateTime)
-                                              : 'Unknown Date',
-                                          style: const TextStyle(
-                                              color: Colors.white60,
-                                              fontSize: 12),
-                                        ),
-                                      ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                  Positioned(
+                                    bottom: 16,
+                                    left: 16,
+                                    right: 16,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.7),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            article.title ?? 'No Title',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            article.source?.name ??
+                                                'Unknown Publisher',
+                                            style: const TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 14),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            dateTime != null
+                                                ? format.format(dateTime)
+                                                : 'Unknown Date',
+                                            style: const TextStyle(
+                                                color: Colors.white60,
+                                                fontSize: 12),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           );
                         },
@@ -279,28 +304,58 @@ class _HomescreenState extends State<Homescreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Row(
-                        children: [
-                          CachedNetworkImage(
-                            imageUrl: article.urlToImage ?? '',
-                            placeholder: (context, url) =>
-                                const CircularProgressIndicator(),
-                            errorWidget: (context, url, error) =>
-                                const Icon(Icons.error),
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              article.title ?? 'No Title',
-                              style: const TextStyle(fontSize: 16),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                      child: InkWell(
+                        onTap: (){
+                          DateTime? dateTime;
+                          if (article.publishedAt != null) {
+                            try {
+                              dateTime = DateTime.parse(article.publishedAt!);
+                            } catch (e) {
+                              dateTime = null;
+                            }
+                          }
+                          Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DescriptionScreen(
+                                      image: article.urlToImage ?? '',
+                                      title: article.title ?? 'No Title',
+                                      description: article.description ??
+                                          'No Description Available',
+                                      author:
+                                          article.author ?? 'Unknown Author',
+                                      source: article.source?.name ??
+                                          'Unknown Source',
+                                      dateTime: dateTime != null
+                                          ? format.format(dateTime)
+                                          : 'Unknown Date',
+                                    ),
+                                  ),
+                                );
+                        },
+                        child: Row(
+                          children: [
+                            CachedNetworkImage(
+                              imageUrl: article.urlToImage ?? '',
+                              placeholder: (context, url) =>
+                                  const CircularProgressIndicator(),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.error),
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                article.title ?? 'No Title',
+                                style: const TextStyle(fontSize: 16),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );

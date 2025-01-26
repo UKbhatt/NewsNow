@@ -1,5 +1,8 @@
+// ignore_for_file: file_names
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../view/Description.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:newapp/viewModel/newViewModel.dart';
 import '../model/categoryNews.dart';
@@ -39,7 +42,6 @@ class _CategorysectionState extends State<Categorysection> {
       ),
       body: Column(
         children: [
-          // Category selection bar
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: SizedBox(
@@ -104,7 +106,34 @@ class _CategorysectionState extends State<Categorysection> {
                         ),
                         elevation: 3,
                         child: InkWell(
-                          onTap: () {},
+                          onTap: () {
+                            DateTime? dateTime;
+                          if (article.publishedAt != null) {
+                            try {
+                              dateTime = DateTime.parse(article.publishedAt!);
+                            } catch (e) {
+                              dateTime = null;
+                            }
+                          }
+                            Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DescriptionScreen(
+                                      image: article.urlToImage ?? '',
+                                      title: article.title ?? 'No Title',
+                                      description: article.description ??
+                                          'No Description Available',
+                                      author:
+                                          article.author ?? 'Unknown Author',
+                                      source: article.source?.name ??
+                                          'Unknown Source',
+                                      dateTime: dateTime != null
+                                          ? format.format(dateTime)
+                                          : 'Unknown Date',
+                                    ),
+                                  ),
+                                );
+                          },
                           child: Container(
                             padding: const EdgeInsets.all(12.0),
                             child: Row(
@@ -129,7 +158,7 @@ class _CategorysectionState extends State<Categorysection> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        article?.title ?? 'No Title',
+                                        article.title ?? 'No Title',
                                         style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
