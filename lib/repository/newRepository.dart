@@ -74,7 +74,7 @@ class Newrepository {
     }
 
     final Response = await get(Uri.parse(
-        'https://newsapi.org/v2/everything?q=${category}&apiKey=4099b3597606429bb75ade7153330fb5'));
+        'https://newsapi.org/v2/everything?q=${category}&apiKey=$apikey'));
 
     if (Response.statusCode == 200) {
       var data = jsonDecode(Response.body);
