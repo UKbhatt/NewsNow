@@ -1,5 +1,3 @@
-// ignore_for_file: non_constant_identifier_names
-
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:newapp/model/NewsHeadlines.dart';
 import '../model/categoryNews.dart';
@@ -10,6 +8,7 @@ import 'dart:convert';
 
 class Newrepository {
   Future<NewsHeadlines> fetchNewsHeadlines(String source) async {
+    
     final apiKey = dotenv.env['APIKEY'];
 
     if (apiKey == null || apiKey.isEmpty) {

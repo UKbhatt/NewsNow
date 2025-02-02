@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import './homeScreen.dart';
 
 class Splashscreen extends StatefulWidget {
   const Splashscreen({super.key});
@@ -18,7 +17,7 @@ class _SplashscreenState extends State<Splashscreen> {
 
     super.initState();
     Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Homescreen()));
+      Navigator.pushNamed(context, '/Home');
     });
   }
 
