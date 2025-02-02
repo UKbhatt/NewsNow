@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Splashscreen extends StatefulWidget {
   const Splashscreen({super.key});
@@ -11,13 +12,27 @@ class Splashscreen extends StatefulWidget {
 }
 
 class _SplashscreenState extends State<Splashscreen> {
-  @override
   
+  @override
   void initState() {
-
     super.initState();
-    Timer(const Duration(seconds: 3), () {
-      Navigator.pushNamed(context, '/Home');
+    _checkSession();
+  }
+
+  Future<void> _checkSession() async {
+    final supabase = Supabase.instance.client;
+    
+    await Future.delayed(
+        const Duration(seconds: 1)); 
+
+    final user = supabase.auth.currentUser;
+
+    Timer(const Duration(seconds: 2), () {
+      if (user != null) {
+        Navigator.pushReplacementNamed(context, '/Home');
+      } else {
+        Navigator.pushReplacementNamed(context, '/Login');
+      }
     });
   }
 
