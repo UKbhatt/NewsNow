@@ -1,5 +1,3 @@
-// ignore_for_file: file_names
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../view/Description.dart';
@@ -33,13 +31,19 @@ class _CategorysectionState extends State<Categorysection> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
-        title: const Text(
-          'News Now',
-          style: TextStyle(
-              color: Colors.black, fontSize: 25, fontWeight: FontWeight.bold),
-        ),
-      ),
+        iconTheme: const IconThemeData(color: Colors.white),
+          centerTitle: true,
+          title: const Text(
+            'News Now',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
+          backgroundColor: Colors.black,
+          ),
       body: Column(
         children: [
           Padding(
@@ -60,7 +64,7 @@ class _CategorysectionState extends State<Categorysection> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: categoryName == categoryList[index]
-                              ? Colors.blue
+                              ? Colors.orange.shade900
                               : const Color.fromARGB(255, 176, 174, 182),
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -89,7 +93,7 @@ class _CategorysectionState extends State<Categorysection> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
                     child: SpinKitChasingDots(
-                      color: Color.fromARGB(255, 162, 199, 228),
+                      color: Color.fromARGB(255, 10, 0, 0),
                       size: 50,
                     ),
                   );
@@ -98,7 +102,7 @@ class _CategorysectionState extends State<Categorysection> {
                     padding: const EdgeInsets.all(8.0),
                     itemCount: snapshot.data!.length,
                     itemBuilder: (context, index) {
-                      final article = snapshot.data!.articles![index]; 
+                      final article = snapshot.data!.articles![index];
                       return Card(
                         margin: const EdgeInsets.symmetric(vertical: 8.0),
                         shape: RoundedRectangleBorder(
@@ -108,31 +112,30 @@ class _CategorysectionState extends State<Categorysection> {
                         child: InkWell(
                           onTap: () {
                             DateTime? dateTime;
-                          if (article.publishedAt != null) {
-                            try {
-                              dateTime = DateTime.parse(article.publishedAt!);
-                            } catch (e) {
-                              dateTime = null;
+                            if (article.publishedAt != null) {
+                              try {
+                                dateTime = DateTime.parse(article.publishedAt!);
+                              } catch (e) {
+                                dateTime = null;
+                              }
                             }
-                          }
                             Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => DescriptionScreen(
-                                      image: article.urlToImage ?? '',
-                                      title: article.title ?? 'No Title',
-                                      description: article.description ??
-                                          'No Description Available',
-                                      author:
-                                          article.author ?? 'Unknown Author',
-                                      source: article.source?.name ??
-                                          'Unknown Source',
-                                      dateTime: dateTime != null
-                                          ? format.format(dateTime)
-                                          : 'Unknown Date',
-                                    ),
-                                  ),
-                                );
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DescriptionScreen(
+                                  image: article.urlToImage ?? '',
+                                  title: article.title ?? 'No Title',
+                                  description: article.description ??
+                                      'No Description Available',
+                                  author: article.author ?? 'Unknown Author',
+                                  source:
+                                      article.source?.name ?? 'Unknown Source',
+                                  dateTime: dateTime != null
+                                      ? format.format(dateTime)
+                                      : 'Unknown Date',
+                                ),
+                              ),
+                            );
                           },
                           child: Container(
                             padding: const EdgeInsets.all(12.0),
@@ -143,7 +146,9 @@ class _CategorysectionState extends State<Categorysection> {
                                   child: CachedNetworkImage(
                                     imageUrl: article.urlToImage ?? '',
                                     placeholder: (context, url) =>
-                                        const CircularProgressIndicator(),
+                                        const SpinKitRing(
+                                      color: Colors.black,
+                                    ),
                                     errorWidget: (context, url, error) =>
                                         const Icon(Icons.error),
                                     width: 100,

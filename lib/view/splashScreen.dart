@@ -12,7 +12,6 @@ class Splashscreen extends StatefulWidget {
 }
 
 class _SplashscreenState extends State<Splashscreen> {
-  
   @override
   void initState() {
     super.initState();
@@ -21,12 +20,8 @@ class _SplashscreenState extends State<Splashscreen> {
 
   Future<void> _checkSession() async {
     final supabase = Supabase.instance.client;
-    
-    await Future.delayed(
-        const Duration(seconds: 1)); 
-
+    await Future.delayed(const Duration(seconds: 3));
     final user = supabase.auth.currentUser;
-
     Timer(const Duration(seconds: 2), () {
       if (user != null) {
         Navigator.pushReplacementNamed(context, '/Home');
@@ -38,37 +33,41 @@ class _SplashscreenState extends State<Splashscreen> {
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height * 1;
-    final width = MediaQuery.of(context).size.width * 1;
+    final height = MediaQuery.of(context).size.height;
     return Scaffold(
-        body: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
+      body: Stack(
+        fit: StackFit.expand,
         children: [
           Image.asset(
-            'images/Splashscreen.png',
+            'assets/images/new-3.jpg',
             fit: BoxFit.cover,
-            width: width * 0.9,
-            height: height * 0.5,
           ),
-          SizedBox(
-            height: height * 0.1,
+          Container(
+            color: Colors.black.withOpacity(0.3),
           ),
-          Text(
-            'News App',
-            style: GoogleFonts.anton(
-                letterSpacing: 0.6, color: Colors.grey[700], fontSize: 30),
-          ),
-          SizedBox(
-            height: height * 0.1,
-          ),
-          const SpinKitChasingDots(
-            color: Colors.red,
-            size: 50.0,
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'News App',
+                  style: GoogleFonts.anton(
+                    letterSpacing: 0.6,
+                    color: Colors.white,
+                    fontSize: 30,
+                  ),
+                ),
+                SizedBox(height: height * 0.05),
+                const SpinKitChasingDots(
+                  color: Colors.black,
+                  size: 50.0,
+                ),
+              ],
+            ),
           ),
         ],
       ),
-    ));
+    );
   }
 }
