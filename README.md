@@ -99,12 +99,7 @@ flutter run
 2.Create a new branch (git checkout -b feature/your-feature)<br>
 3.Make your changes and commit (git commit -am 'Added a new feature')<br>
 4.Push the branch (git push origin feature/your-feature)<br>
-5.Submit a Pull Request<br>
-
----
-
-## 📝 License
-**📄 This project is licensed under the MIT License. See the LICENSE file for details.** 
+5.Submit a Pull Request<br> 
 
 ---
 
