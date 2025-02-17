@@ -1,4 +1,6 @@
-# 📱 Flutter News App 🌍
+# 📱 NewsNow: Flutter News App  🌍
+![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-%233ECF8E.svg?style=for-the-badge&logo=Supabase&logoColor=white)
 
 A  that provides the latest news articles
 Stay updated with **News Now** is a beautifully designed mobile application built using **Flutter** , offering seamless access to real-time news from across the world, powered by **Supabase** for authentication. With integration to the powerful **News API** , this app delivers curated news articles from various categories such as technology, sports, business, and more.<br>
